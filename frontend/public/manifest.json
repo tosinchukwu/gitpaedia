@@ -1,0 +1,21 @@
+{
+  "name": "Gitpaedia",
+  "short_name": "Gitpaedia",
+  "description": "Learn Git interactively with quizzes and practice.",
+  "start_url": "https://gitpaedia.vercel.app",
+  "display": "standalone",
+  "background_color": "#1e293b",
+  "theme_color": "#1e293b",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/vite.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
