@@ -1,9 +1,90 @@
 {
   "title": "Git Foundations",
-  "content": [
-    "Git is a version control system that tracks changes in your files.",
-    "Initialize a repository with `git init`.",
-    "Add files with `git add` and commit with `git commit -m \"message\"`.",
-    "Check status with `git status` and history with `git log`."
-  ]
+  "description": "Learn the basics of Git – version control, commits, and the essential commands.",
+  "sections": [
+    {
+      "heading": "What is Git?",
+      "content": "Git is a **distributed version control system** that tracks changes in your files. It allows multiple people to collaborate on projects without overwriting each other's work."
+    },
+    {
+      "heading": "Installing Git",
+      "content": "You can install Git on Windows, macOS, or Linux. After installation, verify with `git --version`."
+    },
+    {
+      "heading": "Your First Repository",
+      "content": "Initialize a new Git repository with `git init`. This creates a hidden `.git` folder that stores all version history."
+    },
+    {
+      "heading": "Staging and Committing",
+      "content": "Use `git add <file>` to stage changes, then `git commit -m \"message\"` to save them permanently."
+    },
+    {
+      "heading": "Checking Status and History",
+      "content": "`git status` shows the current state of your working directory. `git log` displays the commit history."
+    }
+  ],
+  "quiz": [
+    {
+      "question": "Which command creates a new Git repository?",
+      "options": ["git start", "git init", "git create", "git new"],
+      "correct": 1,
+      "explanation": "`git init` initializes an empty Git repository in the current directory."
+    },
+    {
+      "question": "What does `git add` do?",
+      "options": ["Saves changes permanently", "Stages changes for commit", "Removes files", "Shows differences"],
+      "correct": 1,
+      "explanation": "`git add` stages changes to be included in the next commit."
+    },
+    {
+      "question": "How do you commit changes with a message?",
+      "options": ["git commit -m 'message'", "git commit 'message'", "git commit -a", "git commit -v"],
+      "correct": 0,
+      "explanation": "`-m` allows you to add a commit message inline."
+    },
+    {
+      "question": "What command shows the commit history?",
+      "options": ["git history", "git show", "git log", "git status"],
+      "correct": 2,
+      "explanation": "`git log` displays the commit history in reverse chronological order."
+    },
+    {
+      "question": "What is the purpose of the `.git` directory?",
+      "options": ["Stores user settings", "Contains version history and metadata", "Holds temporary files", "Is ignored by Git"],
+      "correct": 1,
+      "explanation": "The `.git` folder is where Git stores all the metadata and object database for your repository."
+    },
+    {
+      "question": "Which command shows the differences between working directory and staging area?",
+      "options": ["git diff", "git status", "git log", "git show"],
+      "correct": 0,
+      "explanation": "`git diff` shows the differences between your working directory and the staging area."
+    },
+    {
+      "question": "How do you undo a commit (before pushing)?",
+      "options": ["git reset --soft HEAD~1", "git revert HEAD", "git reset --hard HEAD~1", "Both A and B"],
+      "correct": 3,
+      "explanation": "`git reset --soft` keeps changes, `git reset --hard` discards them, and `git revert` creates a new commit that undoes the changes."
+    },
+    {
+      "question": "What does `git branch` do?",
+      "options": ["Lists branches", "Creates a new branch", "Deletes a branch", "All of the above"],
+      "correct": 3,
+      "explanation": "`git branch` can list branches, create a new one, or delete one depending on options used."
+    },
+    {
+      "question": "Which command switches to an existing branch?",
+      "options": ["git checkout branch-name", "git switch branch-name", "git branch branch-name", "Both A and B"],
+      "correct": 3,
+      "explanation": "Both `git checkout` and `git switch` can switch branches (git switch is newer)."
+    },
+    {
+      "question": "What is a 'commit' in Git?",
+      "options": ["A snapshot of the project at a point in time", "A branch", "A remote repository", "A tag"],
+      "correct": 0,
+      "explanation": "A commit is a snapshot of the entire project at a specific time, along with author, date, and a message."
+    }
+  ],
+  "badgeName": "Git Novice",
+  "badgeIcon": "🌱"
 }
