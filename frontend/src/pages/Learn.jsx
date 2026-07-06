@@ -16,18 +16,20 @@ export default function Learn() {
   if (!data) return <div>Level not found</div>
 
   const markComplete = async () => {
-    if (!user) return
-    setLoading(true)
-    const { error } = await supabase
-      .from('user_progress')
-      .upsert({
-        privy_user_id: user.id,
-        level_completed: Math.max(parseInt(level), 0),
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'privy_user_id' })
-    setLoading(false)
-    if (!error) setCompleted(true)
-  }
+  if (!user) return
+  setLoading(true)
+  // Set the user ID for RLS
+  await supabase.rpc('set_privy_user_id', { user_id: user.id })
+  const { error } = await supabase
+    .from('user_progress')
+    .upsert({
+      privy_user_id: user.id,
+      level_completed: Math.max(parseInt(level), 0),
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'privy_user_id' })
+  setLoading(false)
+  if (!error) setCompleted(true)
+}
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
