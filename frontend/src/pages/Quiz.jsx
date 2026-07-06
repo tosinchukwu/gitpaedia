@@ -37,7 +37,8 @@ export default function Quiz() {
       setShowResult(true)
       // Save quiz result to Supabase (optional)
       if (user) {
-        supabase.from('user_progress').upsert({
+         // Set the user ID for RLS
+    await supabase.rpc('set_privy_user_id', { user_id: user.id }) supabase.from('user_progress').upsert({
           privy_user_id: user.id,
           badges: [data.badgeName],
           total_xp: supabase.raw('total_xp + ?', [score * 10])
