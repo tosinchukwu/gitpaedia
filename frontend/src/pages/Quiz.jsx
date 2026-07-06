@@ -18,6 +18,7 @@ export default function Quiz() {
   const [score, setScore] = useState(0)
   const [showResult, setShowResult] = useState(false)
   const [answered, setAnswered] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   const handleOptionClick = (idx) => {
     if (answered) return
@@ -28,22 +29,53 @@ export default function Quiz() {
     }
   }
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (current < questions.length - 1) {
       setCurrent(current + 1)
       setSelected(null)
       setAnswered(false)
     } else {
-      setShowResult(true)
-      // Save quiz result to Supabase (optional)
+      // Quiz finished – save progress to Supabase
       if (user) {
-         // Set the user ID for RLS
-    await supabase.rpc('set_privy_user_id', { user_id: user.id }) supabase.from('user_progress').upsert({
-          privy_user_id: user.id,
-          badges: [data.badgeName],
-          total_xp: supabase.raw('total_xp + ?', [score * 10])
-        }, { onConflict: 'privy_user_id' })
+        setSaving(true)
+        try {
+          // 1. Set RLS session variable
+          await supabase.rpc('set_privy_user_id', { user_id: user.id })
+
+          // 2. Fetch current progress
+          const { data: currentProgress } = await supabase
+            .from('user_progress')
+            .select('badges, total_xp')
+            .eq('privy_user_id', user.id)
+            .maybeSingle()
+
+          const existingBadges = currentProgress?.badges || []
+          const existingXP = currentProgress?.total_xp || 0
+
+          // 3. Add new badge if not already earned
+          const newBadges = existingBadges.includes(data.badgeName)
+            ? existingBadges
+            : [...existingBadges, data.badgeName]
+
+          const newXP = existingXP + score * 10
+
+          // 4. Upsert the updated progress
+          await supabase
+            .from('user_progress')
+            .upsert({
+              privy_user_id: user.id,
+              badges: newBadges,
+              total_xp: newXP,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'privy_user_id' })
+
+        } catch (err) {
+          console.error('Failed to save quiz result:', err)
+        } finally {
+          setSaving(false)
+        }
       }
+      setShowResult(true)
     }
   }
 
@@ -54,11 +86,21 @@ export default function Quiz() {
         <h2 className="text-3xl font-bold mb-4">Quiz Complete!</h2>
         <p className="text-xl">You scored {score} out of {questions.length}</p>
         {passed ? (
-          <div className="mt-4 text-green-600">🎉 Congratulations! You earned the <strong>{data.badgeName}</strong> badge!</div>
+          <div className="mt-4 text-green-600">
+            🎉 Congratulations! You earned the <strong>{data.badgeName}</strong> badge!
+          </div>
         ) : (
-          <div className="mt-4 text-red-600">Keep learning and try again!</div>
+          <div className="mt-4 text-red-600">
+            Keep learning and try again!
+          </div>
         )}
-        <Link to={`/learn/${level}`} className="mt-6 inline-block bg-blue-600 text-white py-2 px-6 rounded-lg">Back to Lesson</Link>
+        {saving && <p className="text-sm text-gray-500 mt-2">Saving progress...</p>}
+        <Link
+          to={`/learn/${level}`}
+          className="mt-6 inline-block bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg transition"
+        >
+          Back to Lesson
+        </Link>
       </div>
     )
   }
@@ -68,8 +110,12 @@ export default function Quiz() {
     <div className="max-w-3xl mx-auto p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
         <div className="flex justify-between items-center mb-4">
-          <span className="text-sm text-gray-500 dark:text-gray-400">Question {current+1} of {questions.length}</span>
-          <span className="text-sm text-gray-500 dark:text-gray-400">Score: {score}</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            Question {current+1} of {questions.length}
+          </span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            Score: {score}
+          </span>
         </div>
         <h2 className="text-2xl font-semibold mb-4">{q.question}</h2>
         <div className="space-y-3">
@@ -96,12 +142,18 @@ export default function Quiz() {
           </div>
         )}
         {answered && current < questions.length - 1 && (
-          <button onClick={handleNext} className="mt-6 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">
+          <button
+            onClick={handleNext}
+            className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg transition"
+          >
             Next Question
           </button>
         )}
         {answered && current === questions.length - 1 && (
-          <button onClick={handleNext} className="mt-6 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">
+          <button
+            onClick={handleNext}
+            className="mt-6 w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg transition"
+          >
             See Results
           </button>
         )}
