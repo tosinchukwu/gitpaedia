@@ -8,10 +8,16 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!user) return
-    const fetchProgress = async () => {
-      const { data, error } = await supabase.rpc('set_privy_user_id', { user_id: user.id })
-        .maybeSingle()
+  if (!user) return
+  const fetchProgress = async () => {
+    // Set the user ID for RLS
+    await supabase.rpc('set_privy_user_id', { user_id: user.id })
+
+    const { data, error } = await supabase
+      .from('user_progress')
+      .select('*')
+      .eq('privy_user_id', user.id)
+      .maybeSingle()
       if (!error && data) setProgress(data)
       setLoading(false)
     }
