@@ -116,7 +116,11 @@ export default function Navbar() {
                 to="/profile"
                 className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
               >
-                Profile
+               Profile
+              </Link>
+
+              <Link to="/levels" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+               Levels
               </Link>
 
               <button

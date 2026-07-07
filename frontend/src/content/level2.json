@@ -1,0 +1,56 @@
+{
+  "title": "Branching & Merging",
+  "description": "Learn how to create branches, switch between them, and merge changes back together.",
+  "sections": [
+    {
+      "heading": "What is a Branch?",
+      "content": "A branch is a lightweight movable pointer to a commit. It allows you to work on features or fixes in isolation without affecting the main codebase."
+    },
+    {
+      "heading": "Creating and Switching Branches",
+      "content": "Create a new branch with `git branch <branch-name>` and switch to it with `git checkout <branch-name>` or `git switch <branch-name>`."
+    },
+    {
+      "heading": "Merging Branches",
+      "content": "Merge changes from one branch into another with `git merge <branch-name>`. Git will automatically combine the changes if there are no conflicts."
+    },
+    {
+      "heading": "Resolving Merge Conflicts",
+      "content": "When the same lines are modified in both branches, Git can't auto-merge. You must manually resolve conflicts in the affected files, then `git add` and `git commit`."
+    }
+  ],
+  "quiz": [
+    {
+      "question": "Which command creates a new branch?",
+      "options": ["git branch new-branch", "git checkout -b new-branch", "git switch -c new-branch", "All of the above"],
+      "correct": 3,
+      "explanation": "All three commands can create a branch: `git branch` creates, `git checkout -b` creates and switches, `git switch -c` does the same."
+    },
+    {
+      "question": "How do you switch to an existing branch?",
+      "options": ["git checkout branch-name", "git switch branch-name", "git branch branch-name", "Both A and B"],
+      "correct": 3,
+      "explanation": "Both `git checkout` and `git switch` can switch branches."
+    },
+    {
+      "question": "What does `git merge feature` do?",
+      "options": ["Creates a new branch", "Merges the current branch into 'feature'", "Merges 'feature' into the current branch", "Deletes the 'feature' branch"],
+      "correct": 2,
+      "explanation": "`git merge feature` takes the changes from the 'feature' branch and merges them into your current branch."
+    },
+    {
+      "question": "What causes a merge conflict?",
+      "options": ["Deleting a file", "Modifying the same lines in two branches", "Using --force flag", "Creating a new branch"],
+      "correct": 1,
+      "explanation": "Merge conflicts occur when the same part of a file is modified in both branches being merged."
+    },
+    {
+      "question": "How do you resolve a merge conflict?",
+      "options": ["Edit the file manually, then git add and commit", "Use git resolve", "Delete the file", "Abort the merge with git merge --abort"],
+      "correct": 0,
+      "explanation": "To resolve a conflict, manually edit the conflicted file to keep the desired changes, then `git add` and `git commit`."
+    }
+  ],
+  "badgeName": "Branch Master",
+  "badgeIcon": "🌿"
+}

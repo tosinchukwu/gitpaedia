@@ -8,6 +8,7 @@ import Practice from './pages/Practice'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Profile from './pages/Profile'
+import Levels from './pages/Levels'
 
 function App() {
   const { ready } = usePrivy()

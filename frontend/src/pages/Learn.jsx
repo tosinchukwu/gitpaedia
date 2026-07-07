@@ -3,8 +3,16 @@ import { useParams, Link } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { supabase } from '../lib/supabaseClient'
 import level1 from '../content/level1.json'
+import level2 from '../content/level2.json'
 
-const levels = { 1: level1 }
+
+const levels = { 
+     1: level1,
+     2: level2,
+  // 3: level3,
+  // 4: level4,
+  // 5: level5
+ }
 
 export default function Learn() {
   const { level } = useParams()
