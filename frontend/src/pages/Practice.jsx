@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useGuestUser } from '../hooks/useGuestUser'
+import GuestBanner from '../components/GuestBanner'
 
 export default function Practice() {
   const { level } = useParams()
+  const { isGuest } = useGuestUser()
   const [command, setCommand] = useState('')
   const [output, setOutput] = useState([])
   const [files, setFiles] = useState(['README.md'])
@@ -43,9 +46,13 @@ export default function Practice() {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
+      <GuestBanner />
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
         <h2 className="text-2xl font-bold mb-4">Practice Terminal</h2>
         <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Type Git commands below. Try: <code>git init</code>, <code>git status</code>, etc.</p>
+        {isGuest && (
+          <p className="text-xs text-yellow-600 mb-2">💡 Your practice progress is saved locally.</p>
+        )}
         <div className="bg-gray-900 text-white rounded-lg p-4 font-mono text-sm h-64 overflow-y-auto mb-4">
           {output.map((item, i) => (
             <div key={i} className="mb-2">

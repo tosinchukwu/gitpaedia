@@ -9,17 +9,32 @@ const queryClient = new QueryClient()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <PrivyProvider
-      appId={import.meta.env.VITE_PRIVY_APP_ID}
-      config={{
-        loginMethods: ['wallet', 'google', 'twitter'],
-        appearance: {
-          theme: 'light',
-          accentColor: '#676FFF',
-          logo: '/vite.svg',
-        },
-      }}
-    >
+<PrivyProvider
+  appId={import.meta.env.VITE_PRIVY_APP_ID}
+  config={{
+    loginMethods: ['wallet', 'google', 'twitter', 'email'],
+    appearance: {
+      theme: 'light',
+      accentColor: '#676FFF',
+      logo: '/vite.svg',
+    },
+    // ✅ Enable guest login
+    embeddedWallets: {
+      ethereum: { createOnLogin: 'users-without-wallets' }
+    },
+    // Show "Continue as Guest" option
+    showEmail: true,
+    // Custom guest login text
+    translations: {
+      en: {
+        login: {
+          guest_login: 'Continue as Guest',
+        }
+      }
+    }
+  }}
+>
+
       <QueryClientProvider client={queryClient}>
         <App />
       </QueryClientProvider>

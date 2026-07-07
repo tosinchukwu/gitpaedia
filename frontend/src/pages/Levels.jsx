@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { supabase } from '../lib/supabaseClient'
+import { useGuestUser } from '../hooks/useGuestUser'
+import GuestBanner from '../components/GuestBanner'
 
 const levelsData = [
   { id: 1, title: 'Git Foundations', description: 'Learn the basics of Git – commits, staging, and history.', icon: '🌱', badge: 'Git Novice' },
@@ -13,14 +15,27 @@ const levelsData = [
 
 export default function Levels() {
   const { user } = usePrivy()
+  const { isGuest } = useGuestUser()
   const [completedLevels, setCompletedLevels] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (isGuest) {
+      // Guest – load from localStorage
+      const progress = JSON.parse(localStorage.getItem('gitpaedia_progress') || '{}')
+      const completed = Object.keys(progress)
+        .filter(k => progress[k].completed)
+        .map(k => parseInt(k.split('_')[1]))
+      setCompletedLevels(completed)
+      setLoading(false)
+      return
+    }
+
     if (!user) {
       setLoading(false)
       return
     }
+
     const fetchProgress = async () => {
       try {
         await supabase.rpc('set_privy_user_id', { user_id: user.id })
@@ -43,7 +58,7 @@ export default function Levels() {
       }
     }
     fetchProgress()
-  }, [user])
+  }, [user, isGuest])
 
   const isLevelUnlocked = (levelId) => {
     if (levelId === 1) return true
@@ -54,6 +69,7 @@ export default function Levels() {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
+      <GuestBanner />
       <h1 className="text-3xl font-bold text-center mb-8">Choose Your Level</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {levelsData.map((level) => {

@@ -5,13 +5,13 @@ import Dashboard from './pages/Dashboard'
 import Learn from './pages/Learn'
 import Quiz from './pages/Quiz'
 import Practice from './pages/Practice'
+import Levels from './pages/Levels'
+import Profile from './pages/Profile'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
-import Profile from './pages/Profile'
-import Levels from './pages/Levels'
 
 function App() {
-  const { ready } = usePrivy()
+  const { ready, authenticated } = usePrivy()
 
   if (!ready) {
     return <div className="flex h-screen items-center justify-center">Loading...</div>
@@ -28,6 +28,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/levels"
+            element={
+              <ProtectedRoute>
+                <Levels />
               </ProtectedRoute>
             }
           />
@@ -52,6 +60,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Practice />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

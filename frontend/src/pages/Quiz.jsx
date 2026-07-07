@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { supabase } from '../lib/supabaseClient'
+import { useGuestUser } from '../hooks/useGuestUser'
+import GuestBanner from '../components/GuestBanner'
 import level1 from '../content/level1.json'
 import level2 from '../content/level2.json'
 
 const levels = { 
-     1: level1,
-     2: level2,
+  1: level1,
+  2: level2,
   // 3: level3,
   // 4: level4,
   // 5: level5
@@ -16,6 +18,7 @@ const levels = {
 export default function Quiz() {
   const { level } = useParams()
   const { user } = usePrivy()
+  const { isGuest } = useGuestUser()
   const data = levels[level]
   if (!data) return <div>Quiz not found</div>
 
@@ -42,14 +45,26 @@ export default function Quiz() {
       setSelected(null)
       setAnswered(false)
     } else {
-      // Quiz finished – save progress to Supabase
-      if (user) {
+      // Quiz finished – save progress
+      if (isGuest) {
+        // Guest – save to localStorage
+        const progress = JSON.parse(localStorage.getItem('gitpaedia_progress') || '{}')
+        const badges = JSON.parse(localStorage.getItem('gitpaedia_badges') || '[]')
+        if (!badges.includes(data.badgeName)) {
+          badges.push(data.badgeName)
+        }
+        progress[`level_${level}`] = { 
+          completed: true, 
+          score: score,
+          updated_at: new Date().toISOString()
+        }
+        localStorage.setItem('gitpaedia_progress', JSON.stringify(progress))
+        localStorage.setItem('gitpaedia_badges', JSON.stringify(badges))
+      } else if (user) {
         setSaving(true)
         try {
-          // 1. Set RLS session variable
           await supabase.rpc('set_privy_user_id', { user_id: user.id })
 
-          // 2. Fetch current progress
           const { data: currentProgress } = await supabase
             .from('user_progress')
             .select('badges, total_xp')
@@ -59,14 +74,12 @@ export default function Quiz() {
           const existingBadges = currentProgress?.badges || []
           const existingXP = currentProgress?.total_xp || 0
 
-          // 3. Add new badge if not already earned
           const newBadges = existingBadges.includes(data.badgeName)
             ? existingBadges
             : [...existingBadges, data.badgeName]
 
           const newXP = existingXP + score * 10
 
-          // 4. Upsert the updated progress
           await supabase
             .from('user_progress')
             .upsert({
@@ -90,6 +103,7 @@ export default function Quiz() {
     const passed = score >= questions.length * 0.6
     return (
       <div className="max-w-2xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl text-center">
+        <GuestBanner />
         <h2 className="text-3xl font-bold mb-4">Quiz Complete!</h2>
         <p className="text-xl">You scored {score} out of {questions.length}</p>
         {passed ? (
@@ -102,6 +116,9 @@ export default function Quiz() {
           </div>
         )}
         {saving && <p className="text-sm text-gray-500 mt-2">Saving progress...</p>}
+        {isGuest && (
+          <p className="text-xs text-yellow-600 mt-2">💡 Connect a wallet to save your progress permanently!</p>
+        )}
         <Link
           to={`/learn/${level}`}
           className="mt-6 inline-block bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg transition"
@@ -115,6 +132,7 @@ export default function Quiz() {
   const q = questions[current]
   return (
     <div className="max-w-3xl mx-auto p-4">
+      <GuestBanner />
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
         <div className="flex justify-between items-center mb-4">
           <span className="text-sm text-gray-500 dark:text-gray-400">

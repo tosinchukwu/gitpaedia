@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { supabase } from '../lib/supabaseClient'
+import { useGuestUser } from '../hooks/useGuestUser'
 import ThemeToggle from './ThemeToggle'
 
 export default function Navbar() {
   const { login, logout, authenticated, user } = usePrivy()
+  const { isGuest } = useGuestUser()
   const [isReturning, setIsReturning] = useState(false)
   const [greeting, setGreeting] = useState('')
   const [profileName, setProfileName] = useState('')
@@ -22,7 +24,7 @@ export default function Navbar() {
     if (profileName) return profileName
     if (user?.email) return user.email
     if (user?.wallet?.address) return user.wallet.address
-    return 'User'
+    return 'Guest'
   }
 
   const displayName = getDisplayName()
@@ -40,19 +42,35 @@ export default function Navbar() {
 
   // Fetch user progress and profile
   useEffect(() => {
-    if (!user) return
+    if (!user && !isGuest) return
+
     const fetchUserData = async () => {
       try {
+        // For guests, check localStorage
+        if (isGuest) {
+          const progress = JSON.parse(localStorage.getItem('gitpaedia_progress') || '{}')
+          const hasProgress = Object.keys(progress).length > 0
+          setIsReturning(hasProgress)
+          const name = 'Guest'
+          if (hasProgress) {
+            setGreeting(`Welcome back, ${name}!`)
+          } else {
+            setGreeting(`${getTimeGreeting()}, ${name}!`)
+          }
+          return
+        }
+
+        // For authenticated users
         await supabase.rpc('set_privy_user_id', { user_id: user.id })
 
-        // Fetch progress (to check if returning)
+        // Fetch progress
         const { data: progressData } = await supabase
           .from('user_progress')
           .select('level_completed, badges')
           .eq('privy_user_id', user.id)
           .maybeSingle()
 
-        // Fetch custom display name from profiles
+        // Fetch custom display name
         const { data: profileData } = await supabase
           .from('profiles')
           .select('display_name')
@@ -66,7 +84,6 @@ export default function Navbar() {
         const hasProgress = progressData && (progressData.level_completed > 0 || progressData.badges?.length > 0)
         setIsReturning(!!hasProgress)
 
-        // Build greeting using the custom name if available
         const name = profileData?.display_name || getDisplayName()
         if (hasProgress) {
           setGreeting(`Welcome back, ${name}!`)
@@ -75,13 +92,12 @@ export default function Navbar() {
         }
       } catch (err) {
         console.error('Failed to fetch user data:', err)
-        // Fallback: use raw email/wallet
-        const fallbackName = user?.email || user?.wallet?.address || 'User'
+        const fallbackName = user?.email || user?.wallet?.address || 'Guest'
         setGreeting(`${getTimeGreeting()}, ${fallbackName}!`)
       }
     }
     fetchUserData()
-  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, isGuest]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <nav className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
@@ -91,19 +107,26 @@ export default function Navbar() {
           Gitpaedia
         </Link>
 
-        {/* Greeting – hidden on very small screens, visible on larger */}
-        {authenticated && greeting && (
+        {/* Greeting */}
+        {(authenticated || isGuest) && greeting && (
           <span className="text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 truncate max-w-[150px] sm:max-w-[300px] text-center order-last sm:order-none w-full sm:w-auto mt-1 sm:mt-0">
             {greeting}
           </span>
         )}
 
-        {/* Right side: theme toggle + user info + profile link */}
+        {/* Right side */}
         <div className="flex items-center gap-3 shrink-0">
           <ThemeToggle />
-          {authenticated ? (
+          {(authenticated || isGuest) ? (
             <>
-              {/* User info – truncated on mobile */}
+              {/* Guest badge */}
+              {isGuest && (
+                <span className="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded-full">
+                  Guest
+                </span>
+              )}
+
+              {/* User info */}
               <span className="text-sm hidden sm:inline-block text-gray-700 dark:text-gray-300 max-w-[120px] truncate md:max-w-[200px]">
                 {displayName}
               </span>
@@ -111,23 +134,46 @@ export default function Navbar() {
                 {shortName}
               </span>
 
-              {/* Profile link */}
+              {/* Links */}
               <Link
-                to="/profile"
+                to="/levels"
                 className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
               >
-               Profile
+                Levels
               </Link>
+              
+              {!isGuest && (
+                <Link
+                  to="/profile"
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Profile
+                </Link>
+              )}
 
-              <Link to="/levels" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-               Levels
-              </Link>
+              {/* Guest save button */}
+              {isGuest && (
+                <button
+                  onClick={login}
+                  className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg transition"
+                >
+                  Save Progress
+                </button>
+              )}
 
+              {/* Logout / Guest logout */}
               <button
-                onClick={logout}
+                onClick={() => {
+                  if (isGuest) {
+                    localStorage.removeItem('gitpaedia_guest_id')
+                    window.location.reload()
+                  } else {
+                    logout()
+                  }
+                }}
                 className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1.5 rounded-lg transition"
               >
-                Logout
+                {isGuest ? 'Exit' : 'Logout'}
               </button>
             </>
           ) : (
