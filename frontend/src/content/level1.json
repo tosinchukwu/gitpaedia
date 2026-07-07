@@ -4,7 +4,7 @@
   "sections": [
     {
       "heading": "What is Git?",
-      "content": "Git is a **distributed version control system** that tracks changes in your files. It allows multiple people to collaborate on projects without overwriting each other's work."
+      "content": "Git is a distributed version control system that tracks changes in your files. It allows multiple people to collaborate on projects without overwriting each other's work."
     },
     {
       "heading": "Installing Git",
