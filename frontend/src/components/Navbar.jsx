@@ -1,4 +1,3 @@
-// frontend/src/components/Navbar.jsx
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
@@ -12,6 +11,7 @@ export default function Navbar() {
   const [isReturning, setIsReturning] = useState(false)
   const [greeting, setGreeting] = useState('')
   const [profileName, setProfileName] = useState('')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Helper: truncate wallet address
   const truncateAddress = (address) => {
@@ -98,81 +98,132 @@ export default function Navbar() {
       }
     }
     fetchUserData()
-  }, [user, isGuest]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, isGuest])
 
   return (
     <nav className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-      <div className="container mx-auto flex flex-wrap items-center justify-between gap-2">
-        {/* Logo */}
-        <Link to="/" className="text-2xl font-bold text-blue-600 dark:text-blue-400 shrink-0">
-          Gitpaedia
-        </Link>
+      <div className="container mx-auto">
+        {/* Top row: Logo, Greeting, Mobile toggle */}
+        <div className="flex items-center justify-between">
+          <Link to="/" className="text-2xl font-bold text-blue-600 dark:text-blue-400 shrink-0">
+            Gitpaedia
+          </Link>
 
-        {/* Greeting */}
+          {/* Greeting - hidden on mobile, visible on tablet+ */}
+          {(authenticated || isGuest) && greeting && (
+            <span className="hidden md:inline-block text-sm font-medium text-gray-700 dark:text-gray-200 truncate max-w-[200px] lg:max-w-[300px]">
+              {greeting}
+            </span>
+          )}
+
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            
+            {/* Mobile menu toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg bg-gray-100 dark:bg-gray-700"
+              aria-label="Toggle menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Greeting on mobile */}
         {(authenticated || isGuest) && greeting && (
-          <span className="text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200 truncate max-w-[150px] sm:max-w-[300px] text-center order-last sm:order-none w-full sm:w-auto mt-1 sm:mt-0">
+          <div className="md:hidden text-center text-sm font-medium text-gray-700 dark:text-gray-200 mt-1 truncate">
             {greeting}
-          </span>
+          </div>
         )}
 
-        {/* Right side - User actions */}
-        <div className="flex items-center gap-3 shrink-0 flex-wrap justify-end">
-          <ThemeToggle />
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-2">
+            {(authenticated || isGuest) ? (
+              <>
+                <div className="flex items-center gap-2">
+                  {isGuest && (
+                    <span className="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded-full">
+                      Guest
+                    </span>
+                  )}
+                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                    {displayName}
+                  </span>
+                </div>
+                <Link to="/levels" className="block text-sm text-blue-600 dark:text-blue-400 py-1" onClick={() => setMobileMenuOpen(false)}>
+                  Levels
+                </Link>
+                <Link to="/dashboard" className="block text-sm text-blue-600 dark:text-blue-400 py-1" onClick={() => setMobileMenuOpen(false)}>
+                  Dashboard
+                </Link>
+                {!isGuest && (
+                  <Link to="/profile" className="block text-sm text-blue-600 dark:text-blue-400 py-1" onClick={() => setMobileMenuOpen(false)}>
+                    Profile
+                  </Link>
+                )}
+                {isGuest && (
+                  <button onClick={() => { login(); setMobileMenuOpen(false) }} className="block w-full text-left text-sm text-green-600 dark:text-green-400 py-1">
+                    Save Progress
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    if (isGuest) {
+                      localStorage.removeItem('gitpaedia_guest_id')
+                      window.location.reload()
+                    } else {
+                      logout()
+                    }
+                    setMobileMenuOpen(false)
+                  }}
+                  className="block w-full text-left text-sm text-red-600 dark:text-red-400 py-1"
+                >
+                  {isGuest ? 'Exit' : 'Logout'}
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => { login(); setMobileMenuOpen(false) }}
+                className="block w-full text-left text-sm text-blue-600 dark:text-blue-400 py-1"
+              >
+                Login
+              </button>
+            )}
+          </div>
+        )}
 
+        {/* Desktop menu */}
+        <div className="hidden md:flex items-center justify-end gap-3 mt-2">
           {(authenticated || isGuest) ? (
             <>
-              {/* Guest badge */}
               {isGuest && (
                 <span className="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded-full">
                   Guest
                 </span>
               )}
-
-              {/* User info - desktop */}
-              <span className="text-sm hidden sm:inline-block text-gray-700 dark:text-gray-300 max-w-[120px] truncate md:max-w-[200px]">
+              <span className="text-sm text-gray-700 dark:text-gray-300 max-w-[120px] truncate">
                 {displayName}
               </span>
-
-              {/* User info - mobile */}
-              <span className="text-sm sm:hidden text-gray-700 dark:text-gray-300 max-w-[80px] truncate">
-                {shortName}
-              </span>
-
-              {/* Navigation Links */}
-              <Link
-                to="/levels"
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
-              >
+              <Link to="/levels" className="text-sm text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">
                 Levels
               </Link>
-
+              <Link to="/dashboard" className="text-sm text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">
+                Dashboard
+              </Link>
               {!isGuest && (
-                <Link
-                  to="/profile"
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
-                >
+                <Link to="/profile" className="text-sm text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">
                   Profile
                 </Link>
               )}
-
-              <Link
-                to="/dashboard"
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
-              >
-                Dashboard
-              </Link>
-
-              {/* Guest save button */}
               {isGuest && (
-                <button
-                  onClick={login}
-                  className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg transition whitespace-nowrap"
-                >
+                <button onClick={login} className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg transition whitespace-nowrap">
                   Save Progress
                 </button>
               )}
-
-              {/* Logout / Guest exit */}
               <button
                 onClick={() => {
                   if (isGuest) {

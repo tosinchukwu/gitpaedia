@@ -13,19 +13,27 @@ export default function Profile() {
   useEffect(() => {
     if (!user) return
     const fetchProfile = async () => {
-      await supabase.rpc('set_privy_user_id', { user_id: user.id })
-      const { data } = await supabase
-        .from('profiles')
-        .select('display_name')
-        .eq('privy_user_id', user.id)
-        .maybeSingle()
-      if (data?.display_name) {
-        setDisplayName(data.display_name)
-      } else {
-        // Prefill with email or wallet address as default
-        setDisplayName(user.email || user.wallet?.address || '')
+      try {
+        // ✅ Set RLS session variable before query
+        await supabase.rpc('set_privy_user_id', { user_id: user.id })
+        
+        const { data } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('privy_user_id', user.id)
+          .maybeSingle()
+          
+        if (data?.display_name) {
+          setDisplayName(data.display_name)
+        } else {
+          // Prefill with email or wallet address as default
+          setDisplayName(user.email || user.wallet?.address || '')
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile:', err)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     fetchProfile()
   }, [user])
@@ -36,7 +44,9 @@ export default function Profile() {
     setSaving(true)
     setMessage('')
     try {
+      // ✅ Set RLS session variable before upsert
       await supabase.rpc('set_privy_user_id', { user_id: user.id })
+      
       const { error } = await supabase
         .from('profiles')
         .upsert({
@@ -44,6 +54,7 @@ export default function Profile() {
           display_name: displayName.trim(),
           updated_at: new Date().toISOString()
         }, { onConflict: 'privy_user_id' })
+        
       if (error) throw error
       setMessage('✅ Display name updated!')
     } catch (err) {

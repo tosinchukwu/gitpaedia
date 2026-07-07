@@ -15,6 +15,16 @@ const levels = {
   // 5: level5
 }
 
+// ✅ Shuffle function
+const shuffleArray = (array) => {
+  const shuffled = [...array]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
 export default function Quiz() {
   const { level } = useParams()
   const { user } = usePrivy()
@@ -22,13 +32,18 @@ export default function Quiz() {
   const data = levels[level]
   if (!data) return <div>Quiz not found</div>
 
-  const questions = data.quiz
+  // ✅ Shuffle questions when component mounts
+  const [questions, setQuestions] = useState([])
   const [current, setCurrent] = useState(0)
   const [selected, setSelected] = useState(null)
   const [score, setScore] = useState(0)
   const [showResult, setShowResult] = useState(false)
   const [answered, setAnswered] = useState(false)
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    setQuestions(shuffleArray(data.quiz))
+  }, [data.quiz])
 
   const handleOptionClick = (idx) => {
     if (answered) return
@@ -47,7 +62,6 @@ export default function Quiz() {
     } else {
       // Quiz finished – save progress
       if (isGuest) {
-        // Guest – save to localStorage
         const progress = JSON.parse(localStorage.getItem('gitpaedia_progress') || '{}')
         const badges = JSON.parse(localStorage.getItem('gitpaedia_badges') || '[]')
         if (!badges.includes(data.badgeName)) {
@@ -98,6 +112,8 @@ export default function Quiz() {
       setShowResult(true)
     }
   }
+
+  if (questions.length === 0) return <div className="text-center p-8">Loading quiz...</div>
 
   if (showResult) {
     const passed = score >= questions.length * 0.6
