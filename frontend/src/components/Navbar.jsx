@@ -1,3 +1,4 @@
+// frontend/src/components/Navbar.jsx
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
@@ -114,9 +115,10 @@ export default function Navbar() {
           </span>
         )}
 
-        {/* Right side */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Right side - User actions */}
+        <div className="flex items-center gap-3 shrink-0 flex-wrap justify-end">
           <ThemeToggle />
+
           {(authenticated || isGuest) ? (
             <>
               {/* Guest badge */}
@@ -126,42 +128,51 @@ export default function Navbar() {
                 </span>
               )}
 
-              {/* User info */}
+              {/* User info - desktop */}
               <span className="text-sm hidden sm:inline-block text-gray-700 dark:text-gray-300 max-w-[120px] truncate md:max-w-[200px]">
                 {displayName}
               </span>
+
+              {/* User info - mobile */}
               <span className="text-sm sm:hidden text-gray-700 dark:text-gray-300 max-w-[80px] truncate">
                 {shortName}
               </span>
 
-              {/* Links */}
+              {/* Navigation Links */}
               <Link
                 to="/levels"
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
               >
                 Levels
               </Link>
-              
+
               {!isGuest && (
                 <Link
                   to="/profile"
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
                 >
                   Profile
                 </Link>
               )}
 
+              <Link
+                to="/dashboard"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+              >
+                Dashboard
+              </Link>
+
               {/* Guest save button */}
               {isGuest && (
                 <button
                   onClick={login}
-                  className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg transition"
+                  className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg transition whitespace-nowrap"
                 >
                   Save Progress
                 </button>
               )}
 
-              {/* Logout / Guest logout */}
+              {/* Logout / Guest exit */}
               <button
                 onClick={() => {
                   if (isGuest) {
@@ -171,7 +182,7 @@ export default function Navbar() {
                     logout()
                   }
                 }}
-                className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1.5 rounded-lg transition"
+                className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1.5 rounded-lg transition whitespace-nowrap"
               >
                 {isGuest ? 'Exit' : 'Logout'}
               </button>
@@ -179,7 +190,7 @@ export default function Navbar() {
           ) : (
             <button
               onClick={login}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-1.5 rounded-lg transition"
+              className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-1.5 rounded-lg transition whitespace-nowrap"
             >
               Login
             </button>
